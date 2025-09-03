@@ -1,0 +1,13 @@
+polla-backend/
+│── server.js
+│── .env
+│── models/
+│    ├── Usuario.js
+│    ├── Partido.js
+│    └── Prediccion.js
+│── routes/
+│    ├── usuarios.js
+│    ├── partidos.js
+│    └── predicciones.js
+│── utils/
+│    └── puntos.js
