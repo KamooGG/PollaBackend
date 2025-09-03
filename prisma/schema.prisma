@@ -1,0 +1,38 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"               // cambia a "postgresql" en prod
+  url      = env("DATABASE_URL")
+}
+
+model Usuario {
+  id           Int           @id @default(autoincrement())
+  nombre       String
+  email        String        @unique
+  predicciones Prediccion[]
+}
+
+model Partido {
+  id               Int           @id @default(autoincrement())
+  local            String
+  visitante        String
+  fecha            DateTime
+  resultadoLocal   Int?
+  resultadoVisitante Int?
+  predicciones     Prediccion[]
+}
+
+model Prediccion {
+  id            Int     @id @default(autoincrement())
+  usuarioId     Int
+  partidoId     Int
+  predLocal     Int
+  predVisitante Int
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id])
+  partido Partido @relation(fields: [partidoId], references: [id])
+
+  @@unique([usuarioId, partidoId])
+}

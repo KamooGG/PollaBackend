@@ -1,32 +1,31 @@
 const express = require("express");
-const Partido = require("../models/Partido");
+const prisma = require("../utils/prisma");
 const router = express.Router();
 
-// Crear partido
 router.post("/", async (req, res) => {
     try {
-        const partido = new Partido(req.body);
-        await partido.save();
+        const { local, visitante, fecha } = req.body;
+        const partido = await prisma.partido.create({
+            data: { local, visitante, fecha: new Date(fecha) }
+        });
         res.json(partido);
     } catch (err) {
         res.status(400).json({ error: err.message });
     }
 });
 
-// Obtener partidos
-router.get("/", async (req, res) => {
-    const partidos = await Partido.find();
+router.get("/", async (_req, res) => {
+    const partidos = await prisma.partido.findMany();
     res.json(partidos);
 });
 
-// Registrar resultado
 router.put("/:id/resultado", async (req, res) => {
     try {
-        const partido = await Partido.findByIdAndUpdate(
-            req.params.id,
-            { resultado: req.body },
-            { new: true }
-        );
+        const { local, visitante } = req.body;
+        const partido = await prisma.partido.update({
+            where: { id: Number(req.params.id) },
+            data: { resultadoLocal: local, resultadoVisitante: visitante }
+        });
         res.json(partido);
     } catch (err) {
         res.status(400).json({ error: err.message });
