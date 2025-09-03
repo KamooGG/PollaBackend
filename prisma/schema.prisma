@@ -3,25 +3,49 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"               // cambia a "postgresql" en prod
+  provider = "postgresql"
   url      = env("DATABASE_URL")
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
 }
 
 model Usuario {
-  id           Int           @id @default(autoincrement())
+  id                  Int           @id @default(autoincrement())
+  nombre              String
+  alias               String        @unique
+  email               String        @unique
+  passwordHash        String
+  emailVerifiedAt     DateTime?
+  verificationToken   String?       @unique
+  verificationExpires DateTime?
+  role                Role          @default(USER)
+  predicciones        Prediccion[]
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+}
+
+model Jornada {
+  id           Int        @id @default(autoincrement())
   nombre       String
-  email        String        @unique
-  predicciones Prediccion[]
+  fechaInicio  DateTime?
+  fechaFin     DateTime?
+  partidos     Partido[]
 }
 
 model Partido {
-  id               Int           @id @default(autoincrement())
-  local            String
-  visitante        String
-  fecha            DateTime
-  resultadoLocal   Int?
+  id                 Int           @id @default(autoincrement())
+  local              String
+  visitante          String
+  fecha              DateTime
+  resultadoLocal     Int?
   resultadoVisitante Int?
-  predicciones     Prediccion[]
+  jornadaId          Int?
+  jornada            Jornada?      @relation(fields: [jornadaId], references: [id])
+  predicciones       Prediccion[]
 }
 
 model Prediccion {
