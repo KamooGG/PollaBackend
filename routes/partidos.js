@@ -1,10 +1,14 @@
+// routes/partidos.js
 const express = require('express');
 const prisma = require('../utils/prisma');
-const admin = require('../middleware/admin');
+const adminSecret = require('../middleware/admin');          // header x-admin-secret (para operaciones operativas)
+const authRequired = require('../middleware/authRequired');  // JWT obligatorio
+const requireRole = require('../middleware/requireRole');    // rol
+
 const router = express.Router();
 
-// Crear partido (admin)
-router.post('/', admin, async (req, res) => {
+// Crear partido (solo con x-admin-secret; NO desde el panel)
+router.post('/', adminSecret, async (req, res) => {
     try {
         const { local, visitante, fecha, jornadaId } = req.body;
         const partido = await prisma.partido.create({
@@ -21,7 +25,7 @@ router.post('/', admin, async (req, res) => {
     }
 });
 
-// Listar partidos (opcional ?jornadaId=)
+// Listar partidos (público; ?jornadaId= opcional)
 router.get('/', async (req, res) => {
     const where = {};
     if (req.query.jornadaId) where.jornadaId = Number(req.query.jornadaId);
@@ -32,11 +36,12 @@ router.get('/', async (req, res) => {
     res.json(partidos);
 });
 
-// Setear resultado (admin)
-router.put('/:id/resultado', admin, async (req, res) => {
+// Setear resultado real (SOLO ADMIN por JWT; accesible desde el panel)
+router.put('/:id/resultado', authRequired, requireRole('ADMIN'), async (req, res) => {
     try {
         const id = Number(req.params.id);
         const { local, visitante } = req.body;
+
         const partido = await prisma.partido.update({
             where: { id },
             data: {

@@ -1,10 +1,11 @@
+// routes/jornadas.js
 const express = require('express');
 const prisma = require('../utils/prisma');
-const admin = require('../middleware/admin');
+const adminSecret = require('../middleware/admin');
 const router = express.Router();
 
-// Crear jornada (admin)
-router.post('/', admin, async (req, res) => {
+// Crear jornada (solo con x-admin-secret; NO desde el panel)
+router.post('/', adminSecret, async (req, res) => {
     try {
         const { nombre, fechaInicio, fechaFin } = req.body;
         const j = await prisma.jornada.create({
@@ -20,13 +21,13 @@ router.post('/', admin, async (req, res) => {
     }
 });
 
-// Listar jornadas
+// Listar jornadas (público)
 router.get('/', async (_req, res) => {
     const j = await prisma.jornada.findMany({ orderBy: { id: 'asc' } });
     res.json(j);
 });
 
-// Partidos por jornada
+// Partidos por jornada (público)
 router.get('/:id/partidos', async (req, res) => {
     const id = Number(req.params.id);
     const partidos = await prisma.partido.findMany({
